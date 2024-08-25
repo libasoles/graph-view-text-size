@@ -9,7 +9,7 @@ export const nodeMaxSize = 5;
 
 // the multiplier range for the font size that we will apply to font size
 export const minAllowed = 1;
-const defaultMax = 2.5;
+const defaultMax = 2;
 export const maxAllowed = 3;
 
 export const DEFAULT_SETTINGS: TextSizePluginSettings = {
