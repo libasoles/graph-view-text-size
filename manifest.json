@@ -1,11 +1,10 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "graph-view-text-size",
+	"name": "Graph View Text Size",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": "Allows you to modify graph view text size.",
+	"author": "Guillermo Pérez",
+	"authorUrl": "https://github.com/libasoles?tab=repositories",
 	"isDesktopOnly": false
 }
