@@ -11,6 +11,7 @@ export interface Renderer {
 
 export interface Node {
 	text: {
+		originalColor?: string;
 		originalFontSize?: string;
 		style: {
 			fontSize: string;

@@ -24,13 +24,15 @@ From the command line:
 
 `cd [VaultFolder]/.obsidian/plugins/`
 
-`git clone git@github.com:libasoles/graph-view-text-size.git`
+```bash
+git clone git@github.com:libasoles/graph-view-text-size.git
 
-`cd graph-view-text-size`
+cd graph-view-text-size
 
-`npm install`
+npm install
 
-`npm run build` (or `npm run dev` if you want to make changes)
+npm run build
+```
 
 Then, enable the plugin in Obsidian settings.
 

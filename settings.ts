@@ -44,7 +44,8 @@ export class TextSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.matchNodeColor)
 					.onChange(async (value) => {
 						this.plugin.settings.matchNodeColor = value;
-						await this.plugin.saveSettings();
+
+						this.plugin.saveSettings();
 					});
 			});
 
@@ -67,7 +68,7 @@ export class TextSettingTab extends PluginSettingTab {
 								multiplier: value,
 							}) + "px";
 
-						await this.plugin.saveSettings();
+						this.plugin.saveSettings();
 					});
 			});
 

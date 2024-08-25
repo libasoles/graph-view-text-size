@@ -49,20 +49,24 @@ export default class TextSizePlugin extends Plugin {
 
 	async adjustFontSizeForAllNodes(renderer: Renderer) {
 		setTimeout(() => {
-			renderer.nodes.forEach(this.adjustFontSizeForNode.bind(this));
+			renderer.nodes.forEach((target) => {
+				this.adjustFontSize(target);
+
+				this.adjustColorForNode(target);
+			});
 		}, 0);
 	}
 
-	async adjustFontSizeForNode(target: Node) {
-		const nodeSize = target.renderer.fNodeSizeMult;
+	async adjustFontSize(node: Node) {
+		const nodeSize = node.renderer.fNodeSizeMult;
 
-		if (!target.text) return;
+		if (!node.text) return;
 
-		if (!target.text.originalFontSize) {
-			const fontSize = target.text.style.fontSize;
-			target.text.originalFontSize = fontSize;
+		if (!node.text.originalFontSize) {
+			const fontSize = node.text.style.fontSize;
+			node.text.originalFontSize = fontSize;
 		}
-		const originalFontSize = parseInt(target.text.originalFontSize);
+		const originalFontSize = parseInt(node.text.originalFontSize);
 
 		const multiplier = this.memoizedMap({
 			value: nodeSize,
@@ -77,11 +81,24 @@ export default class TextSizePlugin extends Plugin {
 			multiplier,
 		});
 
-		target.text.style.fontSize = newFontSize + "px";
+		node.text.style.fontSize = newFontSize + "px";
+	}
+
+	async adjustColorForNode(node: Node) {
+		if (!node.text) return;
 
 		if (this.settings.matchNodeColor) {
-			const nodeColor = target.circle.tint;
-			target.text.style.fill = decimalToHex(nodeColor);
+			if (!node.text.originalColor) {
+				const color = node.text.style.fill;
+				node.text.originalColor = color;
+			}
+
+			const nodeColor = node.circle.tint;
+			node.text.style.fill = decimalToHex(nodeColor);
+		} else {
+			// revert color
+			if (node.text.originalColor)
+				node.text.style.fill = node.text.originalColor;
 		}
 	}
 
@@ -144,7 +161,8 @@ export default class TextSizePlugin extends Plugin {
 	}
 
 	async saveSettings() {
-		await this.updateGraphViews();
+		// TODO: local graph is not reacting immediately to changes
 		await this.saveData(this.settings);
+		await this.updateGraphViews();
 	}
 }
