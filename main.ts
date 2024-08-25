@@ -48,7 +48,9 @@ export default class TextSizePlugin extends Plugin {
 	}
 
 	async adjustFontSizeForAllNodes(renderer: Renderer) {
-		renderer.nodes.forEach(this.adjustFontSizeForNode.bind(this));
+		setTimeout(() => {
+			renderer.nodes.forEach(this.adjustFontSizeForNode.bind(this));
+		}, 0);
 	}
 
 	async adjustFontSizeForNode(target: Node) {
@@ -77,10 +79,8 @@ export default class TextSizePlugin extends Plugin {
 
 		target.text.style.fontSize = newFontSize + "px";
 
-		// TODO: There's a issue with updates. We are getting called before the actual list of nodes is updated. That's why these changes applies only to some nodes
-
 		// const nodeColor = target.circle.tint;
-		// target.text.style.fill = this.decimalToHex(nodeColor);
+		// target.text.style.fill = decimalToHex(nodeColor);
 	}
 
 	private subscribeToValueChanges(renderer: Renderer, onChange: () => void) {
