@@ -7,7 +7,7 @@ import {
 	TextSettingTab,
 } from "settings";
 import { AugmentedView, Node, Renderer, TextSizePluginSettings } from "types";
-import { calculateFontSize, mapValue, memoize } from "utils";
+import { calculateFontSize, decimalToHex, mapValue, memoize } from "utils";
 
 export default class TextSizePlugin extends Plugin {
 	settings: TextSizePluginSettings;
@@ -79,8 +79,10 @@ export default class TextSizePlugin extends Plugin {
 
 		target.text.style.fontSize = newFontSize + "px";
 
-		// const nodeColor = target.circle.tint;
-		// target.text.style.fill = decimalToHex(nodeColor);
+		if (this.settings.matchNodeColor) {
+			const nodeColor = target.circle.tint;
+			target.text.style.fill = decimalToHex(nodeColor);
+		}
 	}
 
 	private subscribeToValueChanges(renderer: Renderer, onChange: () => void) {

@@ -13,6 +13,7 @@ const defaultMax = 2;
 export const maxAllowed = 3;
 
 export const DEFAULT_SETTINGS: TextSizePluginSettings = {
+	matchNodeColor: false,
 	maxSize: defaultMax,
 };
 
@@ -30,8 +31,22 @@ export class TextSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		containerEl.createEl("p", {
-			text: "This is an alpha version so you'll have to help. Focus on graph view after closing the settings for the changes to take effect.",
+			text: "This is an alpha version so you'll have to help. Focus on graph view after closing the settings for the changes to take effect (specially on local grah view).",
 		});
+
+		new Setting(containerEl)
+			.setName("Match node color")
+			.setDesc(
+				"Font color will match the node color. Don't expect fully accurate results yet. This is experimental."
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.matchNodeColor)
+					.onChange(async (value) => {
+						this.plugin.settings.matchNodeColor = value;
+						await this.plugin.saveSettings();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Max font size")

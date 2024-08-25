@@ -24,5 +24,6 @@ export interface Node {
 }
 
 export interface TextSizePluginSettings {
+	matchNodeColor: boolean;
 	maxSize: number;
 }

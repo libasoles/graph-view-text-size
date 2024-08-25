@@ -41,3 +41,9 @@ I use glasses to read and I have a hard time reading the graph view. And I saw a
 [Obsidian graph view as Community plugin](https://forum.obsidian.md/t/obsidian-graph-view-as-community-plugin/18042/3)
 
 Then I saw a couple plugins that managed to modify the graph view, so I decided to give it a try. So, this is insspired on [obsidian-graph-nested-tags](https://github.com/drPilman/obsidian-graph-nested-tags) and [folders-graph](https://github.com/Ratibus11/folders2graph)
+
+## Additonal features
+
+I added a feature to change the color of the node based on the tag color. It's not perfect, but it's a start.
+
+![matchColor.png](./matchColor.png)
