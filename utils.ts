@@ -10,27 +10,29 @@ export function mapValue({
 	inMax: number;
 	outMin: number;
 	outMax: number;
-}) {
-	// Normalizar el valor al rango [0, 1]
-	const normalizedValue = (value - inMin) / (inMax - inMin);
-
-	// Aplicar una escala logarítmica
-	const logScaleValue = Math.log1p(normalizedValue * 9) / Math.log(10);
-
-	// Mapear al rango de salida
-	const mappedValue = logScaleValue * (outMax - outMin) + outMin;
-
-	// Limitar el valor mapeado al rango de salida
-	return Math.min(Math.max(mappedValue, outMin), outMax);
+}): number {
+	return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
 }
 
-export const memoize = <T = any>(fn: Func<T>) => {
-	const cache = new Map();
-	const cached = function (this: any, val: T) {
-		return cache.has(val)
-			? cache.get(val)
-			: cache.set(val, fn.call(this, val)) && cache.get(val);
+export const memoize = <R, P>(fn: (val: P) => R) => {
+	const cache = new Map<string, R>();
+
+	const cached = function (val: P): R {
+		const hash = JSON.stringify(val);
+		return cache.has(hash)
+			? (cache.get(hash) as R)
+			: cache.set(hash, fn(val)) && (cache.get(hash) as R);
 	};
-	cached.cache = cache;
+
 	return cached;
 };
+
+export function calculateFontSize({
+	fontSize,
+	multiplier,
+}: {
+	fontSize: number;
+	multiplier: number;
+}): number {
+	return Math.ceil(fontSize * multiplier);
+}

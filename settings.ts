@@ -1,11 +1,16 @@
 import TextSizePlugin from "main";
 import { App, PluginSettingTab, Setting } from "obsidian";
 import { TextSizePluginSettings } from "types";
-import { mapValue } from "utils";
+import { calculateFontSize } from "utils";
 
-export const minAllowed = 10;
-const defaultMax = 40;
-export const maxAllowed = 120;
+// values used by the graph view settings
+export const nodeMinSize = 0.1;
+export const nodeMaxSize = 5;
+
+// the multiplier range for the font size that we will apply to font size
+export const minAllowed = 1;
+const defaultMax = 2.5;
+export const maxAllowed = 3;
 
 export const DEFAULT_SETTINGS: TextSizePluginSettings = {
 	maxSize: defaultMax,
@@ -24,20 +29,28 @@ export class TextSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
+		containerEl.createEl("p", {
+			text: "This is an alpha version so you'll have to help. Focus on graph view after closing the settings for the changes to take effect.",
+		});
+
 		new Setting(containerEl)
 			.setName("Max font size")
 			.setDesc(
-				"Font size will match the node scale settings until reaches this max value you are setting here."
+				"Font size will grow based on the node scale. That is controlled in the graph view settings. Here you are saying how big the font size can get. You are not setting the font size directly."
 			)
 			.addSlider((slider) => {
 				slider
-					.setLimits(minAllowed, maxAllowed, 1)
+					.setLimits(minAllowed, maxAllowed, 0.1)
 					.setValue(this.plugin.settings.maxSize)
 					.setInstant(true)
 					.onChange(async (value) => {
 						this.plugin.settings.maxSize = value;
 
-						demo.style.fontSize = this.map(value) + "px";
+						demo.style.fontSize =
+							calculateFontSize({
+								fontSize: 10,
+								multiplier: value,
+							}) + "px";
 
 						await this.plugin.saveSettings();
 					});
@@ -48,19 +61,12 @@ export class TextSettingTab extends PluginSettingTab {
 			attr: {
 				style:
 					"font-size: " +
-					this.map(this.plugin.settings.maxSize) +
+					calculateFontSize({
+						fontSize: 10,
+						multiplier: this.plugin.settings.maxSize,
+					}) +
 					"px",
 			},
-		});
-	}
-
-	map(value: number) {
-		return mapValue({
-			value,
-			inMin: minAllowed,
-			inMax: maxAllowed,
-			outMin: 10,
-			outMax: 40,
 		});
 	}
 }

@@ -1,7 +1,7 @@
 {
 	"id": "graph-view-text-size",
 	"name": "Graph View Text Size",
-	"version": "1.0.0",
+	"version": "1.0.0-alpha.1",
 	"minAppVersion": "0.15.0",
 	"description": "Allows you to modify graph view text size.",
 	"author": "Guillermo Pérez",

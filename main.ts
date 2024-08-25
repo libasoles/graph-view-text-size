@@ -1,13 +1,19 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
-import { DEFAULT_SETTINGS, minAllowed, TextSettingTab } from "settings";
+import {
+	DEFAULT_SETTINGS,
+	minAllowed,
+	nodeMaxSize,
+	nodeMinSize,
+	TextSettingTab,
+} from "settings";
 import { AugmentedView, Renderer, TextSizePluginSettings } from "types";
-import { mapValue, memoize } from "utils";
-
-export const nodeMinSize = 0.1;
-export const nodeMaxSize = 5;
+import { calculateFontSize, mapValue, memoize } from "utils";
 
 export default class TextSizePlugin extends Plugin {
 	settings: TextSizePluginSettings;
+
+	memoizedCalculateFontSize = memoize(calculateFontSize);
+	memoizedMap = memoize(mapValue);
 
 	async refresh(leaf: WorkspaceLeaf) {
 		leaf.view.unload();
@@ -41,44 +47,31 @@ export default class TextSizePlugin extends Plugin {
 		this.adjustFontSize(renderer);
 	}
 
-	calculateFontSize({
-		fontSize,
-		nodeSize,
-	}: {
-		fontSize: number;
-		nodeSize: number;
-	}): number {
-		return Math.ceil(fontSize * nodeSize);
-	}
-
-	memoizedCalculateFontSize = memoize(this.calculateFontSize);
-	memoizedMap = memoize(mapValue);
-
 	async adjustFontSize(renderer: Renderer) {
 		const nodeSize = renderer.fNodeSizeMult;
-		const lista = [];
+
 		renderer.links.forEach((link) => {
 			const { target } = link;
+
 			if (!target.text) return;
 
 			if (!target.text.originalFontSize) {
 				const fontSize = link.target.text.style.fontSize;
 				target.text.originalFontSize = fontSize;
 			}
-			lista.push(target.text.originalFontSize);
-			const originalFontSize = target.text.originalFontSize;
+			const originalFontSize = parseInt(target.text.originalFontSize);
 
-			const newRawFontSize = this.memoizedCalculateFontSize({
-				fontSize: originalFontSize,
-				nodeSize,
-			});
-
-			const newFontSize = this.memoizedMap({
-				value: newRawFontSize,
-				inMin: 25,
-				inMax: 35,
+			const multiplier = this.memoizedMap({
+				value: nodeSize,
+				inMin: nodeMinSize,
+				inMax: nodeMaxSize,
 				outMin: minAllowed,
 				outMax: this.settings.maxSize,
+			});
+
+			const newFontSize = this.memoizedCalculateFontSize({
+				fontSize: originalFontSize,
+				multiplier,
 			});
 
 			target.text.style.fontSize = newFontSize + "px";
@@ -93,7 +86,7 @@ export default class TextSizePlugin extends Plugin {
 			enumerable: false,
 		});
 
-		// proxy
+		// proxy to observe grah view settings changes
 		Object.defineProperty(renderer, "fNodeSizeMult", {
 			get: function () {
 				return this._fNodeSizeMult;
@@ -111,6 +104,7 @@ export default class TextSizePlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
+		// TODO: not sure what events to listen to
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", async () => {
 				await this.updateGraphViews();
@@ -128,17 +122,6 @@ export default class TextSizePlugin extends Plugin {
 				await this.updateGraphViews();
 			})
 		);
-
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon(
-			"dice",
-			"Reload",
-			(evt: MouseEvent) => {
-				window.location.reload();
-			}
-		);
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass("my-plugin-ribbon-class");
 
 		this.addSettingTab(new TextSettingTab(this.app, this));
 	}

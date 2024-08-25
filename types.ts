@@ -12,6 +12,7 @@ export interface Renderer {
 interface Link {
 	target: {
 		text: {
+			originalFontSize?: string;
 			style: {
 				fontSize: string;
 			};
