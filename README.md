@@ -2,19 +2,23 @@
 
 This is an `alpha` plugin for [Obsidian](https://obsidian.md).
 
+![demo.png](./demo.png)
+
 ## What it solves
 
-Text size in graph view is too small to read. This is a simple plugin to increase the text size based on the node size.
+Text size in Graph View is too small to read. This is a simple plugin to increase the text size based on the node size.
+
+![demo.gif](./demo.gif)
 
 You can adjust the maximum text size in the plugin settings.
 
-![demo.png](./demo.png)
+![settings.gif](./settings.png)
 
 > This is a very hacky solution, since there's no official API to modify the graph view. It may break in future updates.
 
 ## Manually installing the plugin
 
-This is a beta version, so it's not published. Clone the repo to your vault:
+As this is an `alpha` version,  it's not yet published. Clone the repo to your vault:
 
 From the command line:
 
@@ -24,7 +28,7 @@ From the command line:
 
 ## Why I did this anyway?
 
-I use lenses to read and I have a hard time reading the graph view. And I saw a couple of feature requests in the forum:
+I use glasses to read and I have a hard time reading the graph view. And I saw a couple of feature requests in the forum:
 [obsidian forum feature request (1)](https://forum.obsidian.md/t/request-adjust-graph-font-size-css-solution/6461)
 [obsidian forum feature request (2)](https://forum.obsidian.md/t/obsidian-graph-view-as-community-plugin/18042/3)
 
