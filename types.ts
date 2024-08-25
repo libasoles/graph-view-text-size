@@ -1,4 +1,8 @@
-import { View } from "obsidian";
+import { View, WorkspaceLeaf } from "obsidian";
+
+export interface Leaf extends WorkspaceLeaf {
+	containerEl: HTMLElement;
+}
 
 export interface AugmentedView extends View {
 	renderer: Renderer;
@@ -25,6 +29,7 @@ export interface Node {
 }
 
 export interface TextSizePluginSettings {
+	enableInPlaceSettings: boolean;
 	matchNodeColor: boolean;
 	maxSize: number;
 }

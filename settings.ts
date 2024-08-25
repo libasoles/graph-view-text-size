@@ -9,10 +9,11 @@ export const nodeMaxSize = 5;
 
 // the multiplier range for the font size that we will apply to font size
 export const minAllowed = 1;
-const defaultMax = 2;
+export const defaultMax = 2;
 export const maxAllowed = 3;
 
 export const DEFAULT_SETTINGS: TextSizePluginSettings = {
+	enableInPlaceSettings: false,
 	matchNodeColor: false,
 	maxSize: defaultMax,
 };
@@ -33,6 +34,21 @@ export class TextSettingTab extends PluginSettingTab {
 		containerEl.createEl("p", {
 			text: "This is an alpha version so you'll have to help. Focus on graph view after closing the settings for the changes to take effect (specially on local grah view).",
 		});
+
+		new Setting(containerEl)
+			.setName("Display these controls in Graph View settings")
+			.setDesc(
+				"Experimental. It might stop working after tinkering with it a bit. You can always come back and configure the plugin here."
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enableInPlaceSettings)
+					.onChange(async (value) => {
+						this.plugin.settings.enableInPlaceSettings = value;
+
+						this.plugin.saveSettings();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Match node color")
@@ -84,5 +100,130 @@ export class TextSettingTab extends PluginSettingTab {
 					"px",
 			},
 		});
+	}
+}
+
+export class InPlaceSettings {
+	plugin: TextSizePlugin;
+
+	constructor(plugin: TextSizePlugin) {
+		this.plugin = plugin;
+	}
+
+	getParentNode(containerEl: HTMLElement) {
+		return containerEl
+			.getElementsByClassName("graph-control-section")[2]
+			.getElementsByClassName("tree-item-children")[0] as HTMLElement;
+	}
+
+	addSettings(containerEl: HTMLElement) {
+		const parentNode = this.getParentNode(containerEl);
+
+		const isFeatureEnabled = this.plugin.settings.enableInPlaceSettings;
+
+		if (!isFeatureEnabled) {
+			this.remove();
+
+			return;
+		}
+
+		this.addMatchNodeColorSetting(parentNode);
+		this.addMaxSizeSetting(parentNode);
+	}
+
+	remove() {
+		const containerElements =
+			document.getElementsByClassName("graph-controls");
+
+		for (let i = 0; i < containerElements.length; i++) {
+			const container = containerElements[i] as HTMLElement;
+
+			const parentNode = this.getParentNode(container);
+
+			const childrenToRemove = parentNode.getElementsByClassName(
+				"custom-plugin-setting"
+			);
+
+			Array.from(childrenToRemove).forEach((child) => {
+				parentNode.removeChild(child);
+			});
+		}
+
+		// TODO: reset settings when plugin is disabled
+		// this.plugin.settings.enableInPlaceSettings = false;
+		// this.plugin.settings.matchNodeColor = false;
+		// this.plugin.settings.maxSize = defaultMax;
+	}
+
+	addMatchNodeColorSetting(parentNode: HTMLElement) {
+		const alreadyApplied =
+			parentNode.getElementsByClassName("custom-plugin-toggle").length >
+			0;
+
+		if (alreadyApplied) return;
+
+		// const target = parentNode.getElementsByClassName(
+		// 	"mod-toggle"
+		// )[0] as HTMLElement;
+
+		const target = parentNode.getElementsByClassName(
+			"mod-slider"
+		)[1] as HTMLElement;
+
+		const container = parentNode.insertAfter(
+			document.createElement("div"),
+			target
+		);
+		container.addClass("custom-plugin-setting");
+
+		// TODO: for some reason, the label is not visible
+		new Setting(container)
+			.setName("Match node colors")
+			.setTooltip("Experimental")
+			.setClass("custom-plugin-toggle")
+			.setClass("mod-toggle")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.matchNodeColor)
+					.onChange(async (value) => {
+						this.plugin.settings.matchNodeColor = value;
+						this.plugin.saveSettings();
+					});
+			});
+	}
+
+	addMaxSizeSetting(parentNode: HTMLElement) {
+		const alreadyApplied =
+			parentNode.getElementsByClassName("custom-plugin-slider").length >
+			0;
+
+		if (alreadyApplied) return;
+
+		const target = parentNode.getElementsByClassName(
+			"mod-slider"
+		)[1] as HTMLElement;
+
+		const container = parentNode.insertAfter(
+			document.createElement("div"),
+			target
+		);
+		container.addClass("custom-plugin-setting");
+
+		new Setting(container)
+			.setName("Font max size")
+			.setTooltip("Experimental")
+			.setClass("custom-plugin-slider")
+			.setClass("mod-slider")
+			.addSlider((slider) => {
+				slider
+					.setLimits(minAllowed, maxAllowed, 0.1)
+					.setValue(defaultMax)
+					.setInstant(true)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						this.plugin.settings.maxSize = value;
+						this.plugin.saveSettings();
+					});
+			});
 	}
 }

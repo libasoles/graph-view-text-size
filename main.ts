@@ -1,21 +1,29 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
+import { Plugin } from "obsidian";
 import {
 	DEFAULT_SETTINGS,
+	InPlaceSettings,
 	minAllowed,
 	nodeMaxSize,
 	nodeMinSize,
 	TextSettingTab,
 } from "settings";
-import { AugmentedView, Node, Renderer, TextSizePluginSettings } from "types";
+import {
+	AugmentedView,
+	Leaf,
+	Node,
+	Renderer,
+	TextSizePluginSettings,
+} from "types";
 import { calculateFontSize, decimalToHex, mapValue, memoize } from "utils";
 
 export default class TextSizePlugin extends Plugin {
 	settings: TextSizePluginSettings;
+	inPlaceSettings: InPlaceSettings;
 
 	memoizedCalculateFontSize = memoize(calculateFontSize);
 	memoizedMap = memoize(mapValue);
 
-	async refresh(leaf: WorkspaceLeaf) {
+	async refresh(leaf: Leaf) {
 		// TODO: works fine on graph but doesn't seem to affect localgraph
 		leaf.view.unload();
 		leaf.view.load();
@@ -25,20 +33,24 @@ export default class TextSizePlugin extends Plugin {
 		const graphViews = this.app.workspace.getLeavesOfType("graph");
 		const locaGraphViews = this.app.workspace.getLeavesOfType("localgraph");
 
-		graphViews.forEach(async (leaf: WorkspaceLeaf) => {
+		graphViews.forEach(async (leaf: Leaf) => {
 			await this.observeNodeSizeSetting(leaf);
+
+			this.inPlaceSettings.addSettings(leaf.containerEl);
 
 			this.refresh(leaf);
 		});
 
-		locaGraphViews.forEach(async (leaf: WorkspaceLeaf) => {
+		locaGraphViews.forEach(async (leaf: Leaf) => {
 			await this.observeNodeSizeSetting(leaf);
+
+			this.inPlaceSettings.addSettings(leaf.containerEl);
 
 			this.refresh(leaf);
 		});
 	}
 
-	private async observeNodeSizeSetting(leaf: WorkspaceLeaf) {
+	private async observeNodeSizeSetting(leaf: Leaf) {
 		const renderer = (leaf.view as AugmentedView).renderer;
 		this.subscribeToValueChanges(renderer, () =>
 			this.adjustFontSizeForAllNodes(renderer)
@@ -128,6 +140,8 @@ export default class TextSizePlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
+		this.inPlaceSettings = new InPlaceSettings(this);
+
 		// TODO: not sure what events to listen to
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", async () => {
@@ -150,7 +164,9 @@ export default class TextSizePlugin extends Plugin {
 		this.addSettingTab(new TextSettingTab(this.app, this));
 	}
 
-	onunload() {}
+	onunload() {
+		this.inPlaceSettings.remove();
+	}
 
 	async loadSettings() {
 		this.settings = Object.assign(
