@@ -5,18 +5,21 @@ export interface AugmentedView extends View {
 }
 
 export interface Renderer {
-	links: Link[];
+	nodes: Node[];
 	fNodeSizeMult: number;
 }
 
-interface Link {
-	target: {
-		text: {
-			originalFontSize?: string;
-			style: {
-				fontSize: string;
-			};
+export interface Node {
+	text: {
+		originalFontSize?: string;
+		style: {
+			fontSize: string;
+			fill: string;
 		};
+	};
+	renderer: Renderer;
+	circle: {
+		tint: number;
 	};
 }
 

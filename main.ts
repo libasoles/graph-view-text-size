@@ -6,7 +6,7 @@ import {
 	nodeMinSize,
 	TextSettingTab,
 } from "settings";
-import { AugmentedView, Renderer, TextSizePluginSettings } from "types";
+import { AugmentedView, Node, Renderer, TextSizePluginSettings } from "types";
 import { calculateFontSize, mapValue, memoize } from "utils";
 
 export default class TextSizePlugin extends Plugin {
@@ -16,6 +16,7 @@ export default class TextSizePlugin extends Plugin {
 	memoizedMap = memoize(mapValue);
 
 	async refresh(leaf: WorkspaceLeaf) {
+		// TODO: works fine on graph but doesn't seem to affect localgraph
 		leaf.view.unload();
 		leaf.view.load();
 	}
@@ -24,15 +25,14 @@ export default class TextSizePlugin extends Plugin {
 		const graphViews = this.app.workspace.getLeavesOfType("graph");
 		const locaGraphViews = this.app.workspace.getLeavesOfType("localgraph");
 
-		graphViews.forEach((leaf: WorkspaceLeaf) => {
-			this.observeNodeSizeSetting(leaf);
+		graphViews.forEach(async (leaf: WorkspaceLeaf) => {
+			await this.observeNodeSizeSetting(leaf);
 
 			this.refresh(leaf);
 		});
 
-		locaGraphViews.forEach((leaf: WorkspaceLeaf) => {
-			this.refresh(leaf);
-			this.observeNodeSizeSetting(leaf);
+		locaGraphViews.forEach(async (leaf: WorkspaceLeaf) => {
+			await this.observeNodeSizeSetting(leaf);
 
 			this.refresh(leaf);
 		});
@@ -41,41 +41,46 @@ export default class TextSizePlugin extends Plugin {
 	private async observeNodeSizeSetting(leaf: WorkspaceLeaf) {
 		const renderer = (leaf.view as AugmentedView).renderer;
 		this.subscribeToValueChanges(renderer, () =>
-			this.adjustFontSize(renderer)
+			this.adjustFontSizeForAllNodes(renderer)
 		);
 
-		this.adjustFontSize(renderer);
+		this.adjustFontSizeForAllNodes(renderer);
 	}
 
-	async adjustFontSize(renderer: Renderer) {
-		const nodeSize = renderer.fNodeSizeMult;
+	async adjustFontSizeForAllNodes(renderer: Renderer) {
+		renderer.nodes.forEach(this.adjustFontSizeForNode.bind(this));
+	}
 
-		renderer.links.forEach((link) => {
-			const { target } = link;
+	async adjustFontSizeForNode(target: Node) {
+		const nodeSize = target.renderer.fNodeSizeMult;
 
-			if (!target.text) return;
+		if (!target.text) return;
 
-			if (!target.text.originalFontSize) {
-				const fontSize = link.target.text.style.fontSize;
-				target.text.originalFontSize = fontSize;
-			}
-			const originalFontSize = parseInt(target.text.originalFontSize);
+		if (!target.text.originalFontSize) {
+			const fontSize = target.text.style.fontSize;
+			target.text.originalFontSize = fontSize;
+		}
+		const originalFontSize = parseInt(target.text.originalFontSize);
 
-			const multiplier = this.memoizedMap({
-				value: nodeSize,
-				inMin: nodeMinSize,
-				inMax: nodeMaxSize,
-				outMin: minAllowed,
-				outMax: this.settings.maxSize,
-			});
-
-			const newFontSize = this.memoizedCalculateFontSize({
-				fontSize: originalFontSize,
-				multiplier,
-			});
-
-			target.text.style.fontSize = newFontSize + "px";
+		const multiplier = this.memoizedMap({
+			value: nodeSize,
+			inMin: nodeMinSize,
+			inMax: nodeMaxSize,
+			outMin: minAllowed,
+			outMax: this.settings.maxSize,
 		});
+
+		const newFontSize = this.memoizedCalculateFontSize({
+			fontSize: originalFontSize,
+			multiplier,
+		});
+
+		target.text.style.fontSize = newFontSize + "px";
+
+		// TODO: There's a issue with updates. We are getting called before the actual list of nodes is updated. That's why these changes applies only to some nodes
+
+		// const nodeColor = target.circle.tint;
+		// target.text.style.fill = this.decimalToHex(nodeColor);
 	}
 
 	private subscribeToValueChanges(renderer: Renderer, onChange: () => void) {

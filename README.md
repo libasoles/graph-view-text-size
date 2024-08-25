@@ -26,6 +26,14 @@ From the command line:
 
 `git clone git@github.com:libasoles/graph-view-text-size.git`
 
+`cd graph-view-text-size`
+
+`npm install`
+
+`npm run build` (or `npm run dev` if you want to make changes)
+
+Then, enable the plugin in Obsidian settings.
+
 ## Why I did this anyway?
 
 I use glasses to read and I have a hard time reading the graph view. And I saw a couple of feature requests in the forum:

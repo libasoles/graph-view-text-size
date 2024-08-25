@@ -36,3 +36,10 @@ export function calculateFontSize({
 }): number {
 	return Math.ceil(fontSize * multiplier);
 }
+
+export function decimalToHex(color: number): string {
+	const clampedColor = Math.max(0, Math.min(16777215, color));
+	const hexColor = clampedColor.toString(16).padStart(6, "0");
+
+	return `#${hexColor}`;
+}
