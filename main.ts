@@ -14,73 +14,78 @@ import {
 	Renderer,
 	TextSizePluginSettings,
 } from "types";
-import { calculateFontSize, decimalToHex, mapValue, memoize } from "utils";
+import {
+	calculateFontSize,
+	decimalToHex,
+	mapValue,
+	memoize,
+	nextTick,
+} from "utils";
 
 export default class TextSizePlugin extends Plugin {
 	settings: TextSizePluginSettings;
 	inPlaceSettings: InPlaceSettings;
 
-	memoizedCalculateFontSize = memoize(calculateFontSize);
-	memoizedMap = memoize(mapValue);
+	mainNode: string;
 
-	async refresh(leaf: Leaf) {
-		// TODO: works fine on graph but doesn't seem to affect localgraph
+	calculateFontSize = memoize(calculateFontSize);
+	mapValue = memoize(mapValue);
+
+	private async refresh(leaf: Leaf) {
+		// TODO: works fine on 'graph' but doesn't seem to affect 'localgraph'
 		leaf.view.unload();
 		leaf.view.load();
 	}
 
-	async updateGraphViews() {
+	private async updateGraphViews() {
 		const graphViews = this.app.workspace.getLeavesOfType("graph");
 		const locaGraphViews = this.app.workspace.getLeavesOfType("localgraph");
 
-		graphViews.forEach(async (leaf: Leaf) => {
-			await this.observeNodeSizeSetting(leaf);
+		const update = async (leaf: Leaf) => {
+			await this.modifyRenderer(leaf);
 
 			this.inPlaceSettings.addSettings(leaf.containerEl);
 
 			this.refresh(leaf);
-		});
+		};
 
-		locaGraphViews.forEach(async (leaf: Leaf) => {
-			await this.observeNodeSizeSetting(leaf);
-
-			this.inPlaceSettings.addSettings(leaf.containerEl);
-
-			this.refresh(leaf);
-		});
+		graphViews.forEach(update);
+		locaGraphViews.forEach(update);
 	}
 
-	private async observeNodeSizeSetting(leaf: Leaf) {
-		const renderer = (leaf.view as AugmentedView).renderer;
-		this.subscribeToValueChanges(renderer, () =>
+	private async modifyRenderer({ view }: Leaf) {
+		const renderer = (view as AugmentedView).renderer;
+		subscribeToValueChanges(renderer, () =>
 			this.adjustFontSizeForAllNodes(renderer)
 		);
 
-		this.adjustFontSizeForAllNodes(renderer);
+		await this.adjustFontSizeForAllNodes(renderer);
 	}
 
-	async adjustFontSizeForAllNodes(renderer: Renderer) {
-		setTimeout(() => {
-			renderer.nodes.forEach((target) => {
-				this.adjustFontSize(target);
-
-				this.adjustColorForNode(target);
+	private async adjustFontSizeForAllNodes(renderer: Renderer) {
+		nextTick(() => {
+			renderer.nodes.forEach((node) => {
+				this.adjustFontSize(node);
+				this.adjustTextColor(node);
 			});
-		}, 0);
+		});
 	}
 
-	async adjustFontSize(node: Node) {
-		const nodeSize = node.renderer.fNodeSizeMult;
-
+	private async adjustFontSize(node: Node) {
 		if (!node.text) return;
+
+		// if (node.text.style.fontSize === node.text.originalFontSize) return;
 
 		if (!node.text.originalFontSize) {
 			const fontSize = node.text.style.fontSize;
-			node.text.originalFontSize = fontSize;
+			node.text.originalFontSize = fontSize; // cache font size
 		}
+
 		const originalFontSize = parseInt(node.text.originalFontSize);
 
-		const multiplier = this.memoizedMap({
+		const nodeSize = node.getSize();
+
+		const multiplier = this.mapValue({
 			value: nodeSize,
 			inMin: nodeMinSize,
 			inMax: nodeMaxSize,
@@ -88,7 +93,7 @@ export default class TextSizePlugin extends Plugin {
 			outMax: this.settings.maxSize,
 		});
 
-		const newFontSize = this.memoizedCalculateFontSize({
+		const newFontSize = this.calculateFontSize({
 			fontSize: originalFontSize,
 			multiplier,
 		});
@@ -96,45 +101,25 @@ export default class TextSizePlugin extends Plugin {
 		node.text.style.fontSize = newFontSize + "px";
 	}
 
-	async adjustColorForNode(node: Node) {
+	private async adjustTextColor(node: Node) {
 		if (!node.text) return;
 
-		if (this.settings.matchNodeColor) {
-			if (!node.text.originalColor) {
-				const color = node.text.style.fill;
-				node.text.originalColor = color;
-			}
+		const shouldTextMatchNodeColor = this.settings.matchNodeColor;
 
-			const nodeColor = node.circle.tint;
-			node.text.style.fill = decimalToHex(nodeColor);
-		} else {
-			// revert color
+		if (!shouldTextMatchNodeColor) {
 			if (node.text.originalColor)
-				node.text.style.fill = node.text.originalColor;
+				node.text.style.fill = node.text.originalColor; // revert text color
+
+			return;
 		}
-	}
 
-	private subscribeToValueChanges(renderer: Renderer, onChange: () => void) {
-		Object.defineProperty(renderer, "_fNodeSizeMult", {
-			value: renderer.fNodeSizeMult,
-			writable: true,
-			configurable: true,
-			enumerable: false,
-		});
+		if (!node.text.originalColor) {
+			const color = node.text.style.fill;
+			node.text.originalColor = color; // cache color
+		}
 
-		// proxy to observe grah view settings changes
-		Object.defineProperty(renderer, "fNodeSizeMult", {
-			get: function () {
-				return this._fNodeSizeMult;
-			},
-			set: function (value) {
-				this._fNodeSizeMult = value;
-
-				onChange();
-			},
-			configurable: true,
-			enumerable: true,
-		});
+		const nodeColor = node.circle.tint;
+		node.text.style.fill = decimalToHex(nodeColor);
 	}
 
 	async onload() {
@@ -165,7 +150,7 @@ export default class TextSizePlugin extends Plugin {
 	}
 
 	onunload() {
-		this.inPlaceSettings.remove();
+		this.inPlaceSettings.removeInlineSettings();
 	}
 
 	async loadSettings() {
@@ -181,4 +166,27 @@ export default class TextSizePlugin extends Plugin {
 		await this.saveData(this.settings);
 		await this.updateGraphViews();
 	}
+}
+
+function subscribeToValueChanges(renderer: Renderer, onChange: () => void) {
+	Object.defineProperty(renderer, "_fNodeSizeMult", {
+		value: renderer.fNodeSizeMult,
+		writable: true,
+		configurable: true,
+		enumerable: false,
+	});
+
+	// "proxy" to observe graph view settings changes
+	Object.defineProperty(renderer, "fNodeSizeMult", {
+		get: function () {
+			return this._fNodeSizeMult;
+		},
+		set: function (value) {
+			this._fNodeSizeMult = value;
+
+			onChange();
+		},
+		configurable: true,
+		enumerable: true,
+	});
 }

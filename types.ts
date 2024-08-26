@@ -26,6 +26,7 @@ export interface Node {
 	circle: {
 		tint: number;
 	};
+	getSize: () => number;
 }
 
 export interface TextSizePluginSettings {

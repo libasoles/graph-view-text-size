@@ -3,14 +3,14 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import { TextSizePluginSettings } from "types";
 import { calculateFontSize } from "utils";
 
-// values used by the graph view settings
+// node size range
 export const nodeMinSize = 0.1;
-export const nodeMaxSize = 5;
+export const nodeMaxSize = 80;
 
 // the multiplier range for the font size that we will apply to font size
 export const minAllowed = 1;
-export const defaultMax = 2;
-export const maxAllowed = 3;
+export const defaultMax = 4;
+export const maxAllowed = 6;
 
 export const DEFAULT_SETTINGS: TextSizePluginSettings = {
 	enableInPlaceSettings: false,
@@ -88,6 +88,7 @@ export class TextSettingTab extends PluginSettingTab {
 					});
 			});
 
+		// Demo is not really accurate but gives an idea of the possible font size
 		const demo = containerEl.createEl("p", {
 			text: "The quick brown fox jumps over the lazy dog",
 			attr: {
@@ -110,35 +111,35 @@ export class InPlaceSettings {
 		this.plugin = plugin;
 	}
 
-	getParentNode(containerEl: HTMLElement) {
+	getTargetNode(containerEl: HTMLElement) {
 		return containerEl
 			.getElementsByClassName("graph-control-section")[2]
 			.getElementsByClassName("tree-item-children")[0] as HTMLElement;
 	}
 
 	addSettings(containerEl: HTMLElement) {
-		const parentNode = this.getParentNode(containerEl);
-
 		const isFeatureEnabled = this.plugin.settings.enableInPlaceSettings;
 
 		if (!isFeatureEnabled) {
-			this.remove();
+			this.removeInlineSettings();
 
 			return;
 		}
+
+		const parentNode = this.getTargetNode(containerEl);
 
 		this.addMatchNodeColorSetting(parentNode);
 		this.addMaxSizeSetting(parentNode);
 	}
 
-	remove() {
+	removeInlineSettings() {
 		const containerElements =
 			document.getElementsByClassName("graph-controls");
 
 		for (let i = 0; i < containerElements.length; i++) {
 			const container = containerElements[i] as HTMLElement;
 
-			const parentNode = this.getParentNode(container);
+			const parentNode = this.getTargetNode(container);
 
 			const childrenToRemove = parentNode.getElementsByClassName(
 				"custom-plugin-setting"

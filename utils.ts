@@ -43,3 +43,7 @@ export function decimalToHex(color: number): string {
 
 	return `#${hexColor}`;
 }
+
+export function nextTick(execute: () => void) {
+	setTimeout(execute, 0);
+}
