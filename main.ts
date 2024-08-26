@@ -85,13 +85,15 @@ export default class TextSizePlugin extends Plugin {
 
 		const nodeSize = node.getSize();
 
-		const multiplier = this.mapValue({
-			value: nodeSize,
-			inMin: nodeMinSize,
-			inMax: nodeMaxSize,
-			outMin: minAllowed,
-			outMax: this.settings.maxSize,
-		});
+		const multiplier = !this.settings.dependOnNodeSize
+			? this.settings.maxSize
+			: this.mapValue({
+					value: nodeSize,
+					inMin: nodeMinSize,
+					inMax: nodeMaxSize,
+					outMin: minAllowed,
+					outMax: this.settings.maxSize,
+			  });
 
 		const newFontSize = this.calculateFontSize({
 			fontSize: originalFontSize,

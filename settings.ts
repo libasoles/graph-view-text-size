@@ -13,6 +13,7 @@ export const defaultMax = 4;
 export const maxAllowed = 6;
 
 export const DEFAULT_SETTINGS: TextSizePluginSettings = {
+	dependOnNodeSize: true,
 	enableInPlaceSettings: false,
 	matchNodeColor: false,
 	maxSize: defaultMax,
@@ -66,9 +67,24 @@ export class TextSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName("Text size depends on node size")
+			.setDesc(
+				"Recommended. Otherwise, all text will have the same size."
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.dependOnNodeSize)
+					.onChange(async (value) => {
+						this.plugin.settings.dependOnNodeSize = value;
+
+						this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Max font size")
 			.setDesc(
-				"Font size will grow based on the node scale. That is controlled in the graph view settings. Here you are saying how big the font size can get. You are not setting the font size directly."
+				"How big the font size can get. If text size is dependant on node size, then you are not setting the font size directly, just a max size."
 			)
 			.addSlider((slider) => {
 				slider
