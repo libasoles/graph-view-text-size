@@ -38,11 +38,11 @@ Then, enable the plugin in Obsidian settings.
 
 ## Why I did this anyway?
 
-I use glasses to read and I have a hard time reading the graph view. And I saw a couple of feature requests in the forum:
+I use glasses and I have a hard time reading the graph view. Also I saw a couple of feature requests in the forum:
 [Adjust Graph Font Size, CSS Solution?](https://forum.obsidian.md/t/request-adjust-graph-font-size-css-solution/6461) and
 [Obsidian graph view as Community plugin](https://forum.obsidian.md/t/obsidian-graph-view-as-community-plugin/18042/3)
 
-Then I saw a couple plugins that managed to modify the graph view, so I decided to give it a try. So, this is insspired on [obsidian-graph-nested-tags](https://github.com/drPilman/obsidian-graph-nested-tags) and [folders-graph](https://github.com/Ratibus11/folders2graph)
+Then I found a couple plugins that managed to modify the graph view, so I decided to give it a try and build my own plugin. Anyway, this is inspired on [obsidian-graph-nested-tags](https://github.com/drPilman/obsidian-graph-nested-tags) and [folders-graph](https://github.com/Ratibus11/folders2graph)
 
 ## Additonal features
 
