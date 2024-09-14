@@ -1,7 +1,6 @@
 import { Plugin } from "obsidian";
 import {
 	DEFAULT_SETTINGS,
-	InPlaceSettings,
 	minAllowed,
 	nodeMaxSize,
 	nodeMinSize,
@@ -24,7 +23,6 @@ import {
 
 export default class TextSizePlugin extends Plugin {
 	settings: TextSizePluginSettings;
-	inPlaceSettings: InPlaceSettings;
 
 	mainNode: string;
 
@@ -43,8 +41,6 @@ export default class TextSizePlugin extends Plugin {
 
 		const update = async (leaf: Leaf) => {
 			await this.modifyRenderer(leaf);
-
-			this.inPlaceSettings.addSettings(leaf.containerEl);
 
 			this.refresh(leaf);
 		};
@@ -124,10 +120,21 @@ export default class TextSizePlugin extends Plugin {
 		node.text.style.fill = decimalToHex(nodeColor);
 	}
 
+	private createRefreshButton() {
+		// This creates a refresh button in the left ribbon.
+		const ribbonIconEl = this.addRibbonIcon(
+			"dice",
+			"Reload",
+			(evt: MouseEvent) => {
+				window.location.reload();
+			}
+		);
+
+		ribbonIconEl.addClass("my-plugin-ribbon-class");
+	}
+
 	async onload() {
 		await this.loadSettings();
-
-		this.inPlaceSettings = new InPlaceSettings(this);
 
 		// TODO: not sure what events to listen to
 		this.registerEvent(
@@ -148,12 +155,13 @@ export default class TextSizePlugin extends Plugin {
 			})
 		);
 
+		const isDevEnvironment = process.env.NODE_ENV === "development";
+		if (isDevEnvironment) this.createRefreshButton();
+
 		this.addSettingTab(new TextSettingTab(this.app, this));
 	}
 
-	onunload() {
-		this.inPlaceSettings.removeInlineSettings();
-	}
+	onunload() {}
 
 	async loadSettings() {
 		this.settings = Object.assign(

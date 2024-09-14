@@ -31,7 +31,6 @@ export interface Node {
 
 export interface TextSizePluginSettings {
 	dependOnNodeSize: boolean;
-	enableInPlaceSettings: boolean;
 	matchNodeColor: boolean;
 	maxSize: number;
 }
