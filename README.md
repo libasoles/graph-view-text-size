@@ -25,7 +25,17 @@ You can adjust the maximum text size in the plugin settings.
 
 As this is `beta` version,  it's not yet published.
 
+You have two options:
+
+### Download
+
 You can download a build version in zip mode from the [releases](https://github.com/libasoles/graph-view-text-size/releases) page.
+
+Unzip the file into `[VaultFolder]/.obsidian/plugins/`.
+
+Then enable the plugin in Obsidian settings > `Community plugins`.
+
+### Clone the repo
 
 Or clone the repo to your vault from the command line:
 
@@ -41,7 +51,7 @@ npm install
 npm run build
 ```
 
-Then, enable the plugin in Obsidian settings.
+Then enable the plugin in Obsidian settings > `Community plugins`.
 
 Use `npm run dev` if you plan to modify the code.
 
