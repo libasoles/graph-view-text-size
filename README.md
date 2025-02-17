@@ -6,12 +6,12 @@ This is a `beta` plugin for [Obsidian](https://obsidian.md).
 
 ## What it solves
 
-Text size in Graph View is too small to read. This is a simple plugin to increase the text size based.
+Text size in Graph View is too small to read. This is a simple plugin to increase the text size.
 
 There are two modes:
 
 - Text size based on the node size.
-- Text size independent of the node size (all links will have the same size).
+- Text size independent of the node size (all links will be the same size).
 
 ![demo.gif](./demo.gif)
 
@@ -21,19 +21,23 @@ You can adjust the maximum text size in the plugin settings.
 
 ## Manually installing the plugin
 
-> This is a hacky solution since there's no official API to modify the graph view. It may break in future Obsidian updates. And it might feel clunky in some aspects. I haven't tested it with huge graphs, so be aware than it might hang Obsidian, specially with big font sizes. If that's the case, it should take a minute to recover. Otherwise, just delete the plugin from the folder.
+> This is a hacky solution since there's no official API to modify the graph view. It may break in future Obsidian updates. And it might feel clunky in some aspects. I haven't tested it with huge graphs, so be aware that it might hang Obsidian, especially with big font sizes. If that's the case, it should take a minute to recover. Otherwise, just delete the plugin from the folder.
 
-As this is `beta` version,  it's not yet published.
+As this is `beta` version, ~~it's not yet published~~. Update: it turns out it cannot be published because the check bot asks for styles to live in a stylesheet. That cannot be done, because they are not actual styles for HTML, but properties for Canvas elements. So, I found no way to surpass the bot analysis 🤷‍♂️ 
 
 You have two options:
 
 ### Download
 
-You can download a build version in zip mode from the [releases](https://github.com/libasoles/graph-view-text-size/releases) page.
+~~You can download a build version in zip mode from the [releases](https://github.com/libasoles/graph-view-text-size/releases) page.~~
 
-Unzip the file into `[VaultFolder]/.obsidian/plugins/`.
+~~Unzip the file into `[VaultFolder]/.obsidian/plugins/`.~~
 
-Then enable the plugin in Obsidian settings > `Community plugins`.
+~~Then enable the plugin in Obsidian settings > `Community plugins`.~~
+
+Sorry, this option is not working. See this:
+
+https://github.com/libasoles/graph-view-text-size/issues/1#issuecomment-2393483490
 
 ### Clone the repo
 
